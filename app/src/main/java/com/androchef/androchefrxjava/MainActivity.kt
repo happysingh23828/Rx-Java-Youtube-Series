@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Observer
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 import java.util.*
 
@@ -21,6 +22,8 @@ class MainActivity : AppCompatActivity() {
         rxJavaBasicsShow()
     }
 
+    //to save all the subscriptions(disposable)
+    private val compositeDisposable : CompositeDisposable = CompositeDisposable()
 
     private fun rxJavaBasicsShow() {
 
@@ -34,6 +37,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onSubscribe(d: Disposable?) {
+                //saving subscription
+                compositeDisposable.add(d)
                 Log.d(TAG, "onSubscribe")
             }
 
@@ -50,6 +55,16 @@ class MainActivity : AppCompatActivity() {
                 .map { it.toUpperCase(Locale.getDefault()) } //Transformation (Converting to UpperCase)
                 .subscribe(observer) //Subscription and execution handled by Observable
 
+    }
+
+    //Cancelling all the subscription when activity is getting destroyed.
+    override fun onDestroy() {
+        super.onDestroy()
+
+        //Check if it is already destroyed or not.
+        if(compositeDisposable.isDisposed.not()){
+            compositeDisposable.dispose()
+        }
     }
 
 }
